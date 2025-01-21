@@ -1,11 +1,11 @@
-### Updated `README.md`
+ Updated `README.md`
 
 ```markdown
-# Chat Application
+ Chat Application
 
 A real-time chat application built using React and Strapi for seamless front-end and back-end integration. The project enables users to communicate in real-time with persistent storage and dynamic theming.
 
-## Features
+ Features
 
 - **Real-Time Messaging**: Live chat functionality powered by Socket.io.
 - **Theming Support**: Toggle between light and dark modes.
@@ -14,7 +14,7 @@ A real-time chat application built using React and Strapi for seamless front-end
 - **Strapi Backend**: APIs for managing chat sessions and user data.
 - **Responsive Design**: Fully optimized for desktop and mobile devices.
 
-## Technologies Used
+ Technologies Used
 
 - **Frontend**:
   - React.js
@@ -27,9 +27,9 @@ A real-time chat application built using React and Strapi for seamless front-end
 - **Other Tools**:
   - LocalStorage for client-side caching
 
-## How to Run the Project Locally
+ How to Run the Project Locally
 
-### Prerequisites
+ Prerequisites
 
 Make sure you have the following installed:
 
@@ -37,16 +37,16 @@ Make sure you have the following installed:
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 - [Strapi](https://strapi.io/)
 
-### Steps
+ Steps
 
-#### 1. Clone the Repository
+ 1. Clone the Repository
 
 ```bash
 git clone https://github.com/yourusername/chat-app.git
 cd chat-app
 ```
 
-#### 2. Set Up the Backend (Strapi)
+ 2. Set Up the Backend (Strapi)
 
 1. Navigate to the `backend/` directory:
    ```bash
@@ -66,7 +66,7 @@ cd chat-app
    ```
    Set up your admin account and configure APIs as needed.
 
-#### 3. Set Up the Frontend
+ 3. Set Up the Frontend
 
 1. Navigate to the `frontend/` directory:
    ```bash
@@ -85,42 +85,40 @@ cd chat-app
    http://localhost:3000
    ```
 
-#### 4. Connect Frontend to Backend
+ 4. Connect Frontend to Backend
 
 - Ensure the API URL in the frontend (e.g., `src/config/api.js`) points to your Strapi backend:
   ```javascript
   export const API_URL = "http://localhost:1337";
   ```
 
-## Project Structure
+ Project Structure
 
 ```plaintext
-backend/               # Strapi backend files
-frontend/              # React frontend files
+backend/                Strapi backend files
+frontend/               React frontend files
   ├── src/
-      ├── components/  # React components (MessageList, MessageInput, Header, etc.)
-      ├── context/     # Context API for theme and session management
-      ├── services/    # API and local storage utilities
-      ├── App.jsx      # Main application entry point
-  ├── public/          # Static assets
+      ├── components/   React components (MessageList, MessageInput, Header, etc.)
+      ├── context/      Context API for theme and session management
+      ├── services/     API and local storage utilities
+      ├── App.jsx       Main application entry point
+  ├── public/           Static assets
 ```
 
-## Screenshots
+ Screenshots
 
-![Light Mode Screenshot](https://via.placeholder.com/800x400)  
-_Example of the application in light mode_
+![Signin SignUp Form](./Sign/SignUpform.png)
 
-![Dark Mode Screenshot](https://via.placeholder.com/800x400)  
-_Example of the application in dark mode_
+![Chat Interface](./Chat%20interface.png)  
 
-## Future Improvements
+ Future Improvements
 
 - Implement user authentication via Strapi.
 - Add group chat and multimedia messaging.
 - Use a cloud database (e.g., MongoDB) for scalable storage.
 - Deploy the app using platforms like Vercel (frontend) and Render (backend).
 
-## License
+ License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
