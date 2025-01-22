@@ -23,7 +23,11 @@ const ChatInterface = ({ username, onLogout }) => {
     setMessages(storedMessages);
 
     socketRef.current = io(SOCKET_URL);
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Connection error:", err);
+    });
     socketRef.current.on("message", (msg) => {
+      console.log("message from server", msg);
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, { ...msg, sender: "Server" }];
         saveToLocalStorage(`chatMessages_${currentSession}`, updatedMessages);
