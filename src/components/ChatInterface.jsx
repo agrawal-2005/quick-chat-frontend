@@ -16,10 +16,18 @@ const ChatInterface = ({ username, onLogout }) => {
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { sessions, createSession, currentSession, loadSession } = useSession();
+  const { sessions, createSession, currentSession, loadSession, clearSessions } = useSession();
 
   useEffect(() => {
-    // Load messages only for the current user
+    // Clear previous user's data when switching accounts
+    clearPreviousUserData();
+
+    // Load the last accessed session
+    const lastSession = getFromLocalStorage(`lastSession_${username}`);
+    if (lastSession) {
+      loadSession(lastSession);
+    }
+
     const storedMessages = getFromLocalStorage(`chatMessages_${username}`) || [];
     setMessages(storedMessages);
 
@@ -28,7 +36,7 @@ const ChatInterface = ({ username, onLogout }) => {
       console.log("message from server", msg);
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, { ...msg, sender: "Server" }];
-        saveToLocalStorage(`chatMessages_${username}`, updatedMessages); // Save messages with username
+        saveToLocalStorage(`chatMessages_${username}`, updatedMessages);
         return updatedMessages;
       });
     });
@@ -37,6 +45,13 @@ const ChatInterface = ({ username, onLogout }) => {
       socketRef.current.disconnect();
     };
   }, [username]);
+
+  const clearPreviousUserData = () => {
+    // Clear messages and sessions for the previous user
+    setMessages([]);
+    clearSessions(); // Assuming this clears session data in the context
+    saveToLocalStorage(`chatMessages_${username}`, []);
+  };
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -53,7 +68,7 @@ const ChatInterface = ({ username, onLogout }) => {
 
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages, newMessage];
-      saveToLocalStorage(`chatMessages_${username}`, updatedMessages); // Save messages with username
+      saveToLocalStorage(`chatMessages_${username}`, updatedMessages);
       return updatedMessages;
     });
 
@@ -73,18 +88,18 @@ const ChatInterface = ({ username, onLogout }) => {
       createSession(newSession);
       loadSession(newSession);
       setMessages([]);
-      saveToLocalStorage(`chatMessages_${username}`, []); // Reset messages for the new session
+      saveToLocalStorage(`chatMessages_${username}`, []);
     }
   };
 
+  useEffect(() => {
+    if (currentSession) {
+      saveToLocalStorage(`lastSession_${username}`, currentSession);
+    }
+  }, [currentSession]);
+
   const toggleQuickChat = () => {
     setIsQuickChatVisible((prev) => !prev);
-  };
-
-  const handleLogout = () => {
-    // Clear messages from local storage on logout
-    localStorage.removeItem(`chatMessages_${username}`);
-    onLogout(); // Call the passed logout function
   };
 
   return (
@@ -121,7 +136,7 @@ const ChatInterface = ({ username, onLogout }) => {
             {isDarkMode ? "Light Mode" : "Dark Mode"}
           </button>
           <button
-            onClick={handleLogout}
+            onClick={onLogout}
             className="ml-4 px-4 py-2 font-semibold text-sm bg-red-500 text-white rounded-full shadow hover:bg-red-600 transition duration-200"
           >
             Logout
@@ -241,14 +256,15 @@ const ChatInterface = ({ username, onLogout }) => {
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className={`flex-grow mr-2 p-3 rounded-full border ${
-                  isDarkMode ? "bg-gray-700 text-gray-200" : "bg-white"
+                className={`flex-grow mr-2 p-2 rounded border ${
+                  isDarkMode ? "border-gray-700" : "border-gray-300"
                 }`}
-                placeholder="Type a message..."
+                placeholder="Type your message..."
+                required
               />
               <button
                 type="submit"
-                className={`p-2 rounded-full text-white bg-blue-500 hover:bg-blue-600 transition duration-200`}
+                className={`p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200`}
               >
                 Send
               </button>
