@@ -4,7 +4,7 @@ import Auth from './components/Auth';
 import ChatInterface from './components/ChatInterface';
 import { getFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from './services/localstorage';
 
-const API_URL = 'http://localhost:1337';
+const API_URL = 'https://quick-chat-backend-i1ya.onrender.com';
 
 const App = () => {
   const [user, setUser] = useState(null);
