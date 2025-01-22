@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Auth from './components/Auth';
 import ChatInterface from './components/ChatInterface';
-import { getFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from './services/localstorage.js';
-
+import { getFromLocalStorage, removeFromLocalStorage, saveToLocalStorage } from './services/localstorage';
 const API_URL = 'https://quick-chat-backend-i1ya.onrender.com';
 
 const App = () => {
