@@ -4,7 +4,7 @@ import { useTheme } from "../context/ThemeContext.jsx";
 import {
   getFromLocalStorage,
   saveToLocalStorage,
-} from "../services/localstorage.js";
+} from "../services/localStorage.js";
 import { useSession } from "../context/SessionContext.jsx";
 
 const SOCKET_URL = "https://quick-chat-backend-i1ya.onrender.com";

@@ -1,8 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import {
-  getFromLocalStorage,
-  saveToLocalStorage,
-} from "../services/localstorage";
+import { getFromLocalStorage, saveToLocalStorage } from '../services/localStorage.js';
 
 const ThemeContext = createContext();
 

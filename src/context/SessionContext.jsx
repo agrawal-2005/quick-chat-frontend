@@ -1,6 +1,6 @@
 // SessionContext.jsx
 import React, { createContext, useContext, useState } from 'react';
-import { getFromLocalStorage, saveToLocalStorage } from '../services/localstorage.js';
+import { getFromLocalStorage, saveToLocalStorage } from '../services/localStorage.js';
 
 const SessionContext = createContext();
 
