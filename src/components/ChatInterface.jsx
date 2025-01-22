@@ -19,18 +19,16 @@ const ChatInterface = ({ username, onLogout }) => {
   const { sessions, createSession, currentSession, loadSession } = useSession();
 
   useEffect(() => {
-    const storedMessages = getFromLocalStorage(`chatMessages_${currentSession}`) || [];
+    // Load messages only for the current user
+    const storedMessages = getFromLocalStorage(`chatMessages_${username}`) || [];
     setMessages(storedMessages);
 
     socketRef.current = io(SOCKET_URL);
-    // socketRef.current.on("connect_error", (err) => {
-    //   console.error("Connection error:", err);
-    // });
     socketRef.current.on("message", (msg) => {
       console.log("message from server", msg);
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, { ...msg, sender: "Server" }];
-        saveToLocalStorage(`chatMessages_${currentSession}`, updatedMessages);
+        saveToLocalStorage(`chatMessages_${username}`, updatedMessages); // Save messages with username
         return updatedMessages;
       });
     });
@@ -38,7 +36,7 @@ const ChatInterface = ({ username, onLogout }) => {
     return () => {
       socketRef.current.disconnect();
     };
-  }, [currentSession]);
+  }, [username]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -55,7 +53,7 @@ const ChatInterface = ({ username, onLogout }) => {
 
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages, newMessage];
-      saveToLocalStorage(`chatMessages_${currentSession}`, updatedMessages);
+      saveToLocalStorage(`chatMessages_${username}`, updatedMessages); // Save messages with username
       return updatedMessages;
     });
 
@@ -69,32 +67,24 @@ const ChatInterface = ({ username, onLogout }) => {
 
   useEffect(scrollToBottom, [messages]);
 
-  useEffect(() => {
-    const savedSession = getFromLocalStorage("lastSession");
-    if (savedSession) {
-      loadSession(savedSession);
-    }
-  }, []);
-
   const startNewSession = () => {
     const newSession = prompt("Enter a new session name:");
     if (newSession) {
       createSession(newSession);
       loadSession(newSession);
       setMessages([]);
-      saveToLocalStorage("lastSession", newSession);
-      saveToLocalStorage(`chatMessages_${newSession}`, []);
+      saveToLocalStorage(`chatMessages_${username}`, []); // Reset messages for the new session
     }
   };
 
-  useEffect(() => {
-    if (currentSession) {
-      saveToLocalStorage("lastSession", currentSession);
-    }
-  }, [currentSession]);
-
   const toggleQuickChat = () => {
     setIsQuickChatVisible((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    // Clear messages from local storage on logout
+    localStorage.removeItem(`chatMessages_${username}`);
+    onLogout(); // Call the passed logout function
   };
 
   return (
@@ -131,7 +121,7 @@ const ChatInterface = ({ username, onLogout }) => {
             {isDarkMode ? "Light Mode" : "Dark Mode"}
           </button>
           <button
-            onClick={onLogout}
+            onClick={handleLogout}
             className="ml-4 px-4 py-2 font-semibold text-sm bg-red-500 text-white rounded-full shadow hover:bg-red-600 transition duration-200"
           >
             Logout
@@ -204,12 +194,11 @@ const ChatInterface = ({ username, onLogout }) => {
                 } mb-4`}
               >
                 <div className="max-w-sm">
-                  {message.sender !== username &&
-                    message.sender !== "Server" && (
-                      <div className="text-sm font-bold text-gray-600 mb-1">
-                        {message.sender}
-                      </div>
-                    )}
+                  {message.sender !== username && message.sender !== "Server" && (
+                    <div className="text-sm font-bold text-gray-600 mb-1">
+                      {message.sender}
+                    </div>
+                  )}
                   <div
                     className={`relative p-4 rounded-lg shadow-lg transition duration-200 ${
                       message.sender === username
@@ -259,11 +248,7 @@ const ChatInterface = ({ username, onLogout }) => {
               />
               <button
                 type="submit"
-                className={`px-4 py-2 font-semibold rounded-full ${
-                  inputMessage.trim()
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-400 text-gray-800 cursor-not-allowed"
-                }`}
+                className={`p-2 rounded-full text-white bg-blue-500 hover:bg-blue-600 transition duration-200`}
               >
                 Send
               </button>
