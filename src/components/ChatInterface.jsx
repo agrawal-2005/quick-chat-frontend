@@ -16,27 +16,15 @@ const ChatInterface = ({ username, onLogout }) => {
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { sessions, createSession, currentSession, loadSession, clearSessions } = useSession();
+  const { sessions, createSession, currentSession, loadSession } = useSession();
 
   useEffect(() => {
-    // Clear previous user's data when switching accounts
-    clearPreviousUserData();
-
-    // Load the last accessed session
-    const lastSession = getFromLocalStorage(`lastSession_${username}`);
-    if (lastSession) {
-      loadSession(lastSession);
-    }
-
-    const storedMessages = getFromLocalStorage(`chatMessages_${username}`) || [];
-    setMessages(storedMessages);
-
     socketRef.current = io(SOCKET_URL);
+
     socketRef.current.on("message", (msg) => {
-      console.log("message from server", msg);
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, { ...msg, sender: "Server" }];
-        saveToLocalStorage(`chatMessages_${username}`, updatedMessages);
+        saveToLocalStorage(`chatMessages_${username}_${currentSession}`, updatedMessages);
         return updatedMessages;
       });
     });
@@ -44,14 +32,12 @@ const ChatInterface = ({ username, onLogout }) => {
     return () => {
       socketRef.current.disconnect();
     };
-  }, [username]);
+  }, [username, currentSession]);
 
-  const clearPreviousUserData = () => {
-    // Clear messages and sessions for the previous user
-    setMessages([]);
-    clearSessions(); // Assuming this clears session data in the context
-    saveToLocalStorage(`chatMessages_${username}`, []);
-  };
+  useEffect(() => {
+    const storedMessages = getFromLocalStorage(`chatMessages_${username}_${currentSession}`) || [];
+    setMessages(storedMessages);
+  }, [username, currentSession]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -68,7 +54,7 @@ const ChatInterface = ({ username, onLogout }) => {
 
     setMessages((prevMessages) => {
       const updatedMessages = [...prevMessages, newMessage];
-      saveToLocalStorage(`chatMessages_${username}`, updatedMessages);
+      saveToLocalStorage(`chatMessages_${username}_${currentSession}`, updatedMessages);
       return updatedMessages;
     });
 
@@ -82,21 +68,30 @@ const ChatInterface = ({ username, onLogout }) => {
 
   useEffect(scrollToBottom, [messages]);
 
+  const handleUserSwitch = (newUsername) => {
+    // Save current session and messages for the current user before switching
+    if (currentSession) {
+      saveToLocalStorage(`lastSession_${username}`, currentSession);
+      saveToLocalStorage(`chatMessages_${username}_${currentSession}`, messages);
+    }
+
+    // Load the new user's session and messages
+    const savedSession = getFromLocalStorage(`lastSession_${newUsername}`);
+    loadSession(savedSession);
+    const storedMessages = getFromLocalStorage(`chatMessages_${newUsername}_${savedSession}`) || [];
+    setMessages(storedMessages);
+  };
+
   const startNewSession = () => {
     const newSession = prompt("Enter a new session name:");
     if (newSession) {
       createSession(newSession);
       loadSession(newSession);
       setMessages([]);
-      saveToLocalStorage(`chatMessages_${username}`, []);
+      saveToLocalStorage(`lastSession_${username}`, newSession);
+      saveToLocalStorage(`chatMessages_${username}_${newSession}`, []);
     }
   };
-
-  useEffect(() => {
-    if (currentSession) {
-      saveToLocalStorage(`lastSession_${username}`, currentSession);
-    }
-  }, [currentSession]);
 
   const toggleQuickChat = () => {
     setIsQuickChatVisible((prev) => !prev);
@@ -160,7 +155,11 @@ const ChatInterface = ({ username, onLogout }) => {
             <div
               key={index}
               className="cursor-pointer p-2 hover:bg-gray-300 rounded text-white"
-              onClick={() => loadSession(session)}
+              onClick={() => {
+                loadSession(session);
+                const storedMessages = getFromLocalStorage(`chatMessages_${username}_${session}`) || [];
+                setMessages(storedMessages);
+              }}
             >
               {session}
             </div>
@@ -247,8 +246,8 @@ const ChatInterface = ({ username, onLogout }) => {
             onSubmit={sendMessage}
             className={`p-4 shadow-md border-t ${
               isDarkMode
-                ? "bg-gray-800 border-gray-600"
-                : "bg-white border-gray-200"
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-300"
             }`}
           >
             <div className="flex items-center">
@@ -256,15 +255,14 @@ const ChatInterface = ({ username, onLogout }) => {
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className={`flex-grow mr-2 p-2 rounded border ${
-                  isDarkMode ? "border-gray-700" : "border-gray-300"
-                }`}
                 placeholder="Type your message..."
-                required
+                className={`flex-grow p-2 border rounded ${
+                  isDarkMode ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-900"
+                }`}
               />
               <button
                 type="submit"
-                className={`p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200`}
+                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
               >
                 Send
               </button>
